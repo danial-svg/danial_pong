@@ -62,6 +62,7 @@ pub struct ActiveEffects {
     pub reverse_timer: Option<Timer>,
     pub shield_active: bool,
     pub shield_timer: Option<Timer>,
+    pub multy_ball: Option<Timer>,
 }
 
 #[derive(Component)]
@@ -117,14 +118,12 @@ fn spawn_powerup(
         commands.spawn((
             Sprite {
                 color: p_type.color(),
-                // سایز قبلی 30.0 بود که ضرب در 2.5 می‌شود 75.0
                 custom_size: Some(Vec2::new(60.0, 60.0)),
                 ..default()
             },
             Transform::from_xyz(x, y, 4.0),
             PowerUpItem {
                 power_type: p_type,
-                // شعاع شعاع برخورد هم 2.5 برابر می‌شود (از 15.0 به 37.5)
                 radius: 30.0,
             },
         ));
@@ -224,24 +223,31 @@ fn apply_powerup(
             }
         }
         PowerUpType::MultiBall => {
-            // بارگذاری تصویر ball.png برای توپ دوم
-            let ball_texture = asset_server.load("ball.png");
+            for (player, mut effects, _) in players.iter_mut() {
+                if player.id == hitter {
+                    effects.multy_ball = Some(Timer::from_seconds(3.0, TimerMode::Once));
 
-            commands.spawn((
-                Sprite {
-                    image: ball_texture,
-                    custom_size: Some(Vec2::new(20.0, 20.0)),
-                    ..default()
-                },
-                Transform::from_translation(ball_pos),
-                Ball {
-                    velocity: Vec2::new(300.0, -200.0),
-                    radius: 10.0,
-                    base_speed: 300.0,
-                    attached_to: None,
-                },
-                ExtraBall,
-            ));
+                    let ball_texture = asset_server.load("ball.png");
+                    let speed_x = if hitter == PlayerId::One { 600.0 } else { -600.0 };
+
+                    commands.spawn((
+                        Sprite {
+                            image: ball_texture,
+                            custom_size: Some(Vec2::new(20.0, 20.0)),
+                            ..default()
+                        },
+                        Transform::from_translation(ball_pos),
+                        Ball {
+                            velocity: Vec2::new(speed_x, -200.0),
+                            radius: 10.0,
+                            base_speed: 600.0,
+                            attached_to: None,
+                        },
+                        ExtraBall,
+                    ));
+                    break;
+                }
+            }
         }
         _ => {}
     }
@@ -252,6 +258,7 @@ fn update_active_effects(
     mut commands: Commands,
     mut players: Query<(&Player, &mut ActiveEffects, &mut Sprite)>,
     shields: Query<(Entity, &ShieldEntity)>,
+    extra_balls: Query<Entity, With<ExtraBall>>,
 ) {
     for (player, mut effects, mut sprite) in &mut players {
         if let Some(ref mut timer) = effects.big_paddle_timer {
@@ -284,6 +291,17 @@ fn update_active_effects(
             }
         }
 
+        // بخش اصلاح شده برای توپ دوم:
+        if let Some(ref mut timer) = effects.multy_ball {
+            timer.tick(time.delta());
+            if timer.just_finished() {
+                effects.multy_ball = None; // ۱. خالی کردن تایمر خودِ توپ
+                for e_ball in &extra_balls {
+                    commands.entity(e_ball).despawn(); // ۲. حذف تمام توپ‌های اضافه از بازی
+                }
+            }
+        }
+
         if let Some(ref mut timer) = effects.shield_timer {
             timer.tick(time.delta());
             if timer.just_finished() {
@@ -303,11 +321,15 @@ fn cleanup_powerups(
     mut commands: Commands,
     items: Query<Entity, With<PowerUpItem>>,
     shields: Query<Entity, With<ShieldEntity>>,
+    extra_balls: Query<Entity, With<ExtraBall>>,
 ) {
     for entity in &items {
         commands.entity(entity).despawn();
     }
     for entity in &shields {
+        commands.entity(entity).despawn();
+    }
+    for entity in &extra_balls {
         commands.entity(entity).despawn();
     }
 }

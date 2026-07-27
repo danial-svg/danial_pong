@@ -51,7 +51,10 @@ impl Plugin for BallPlugin {
     }
 }
 
-fn setup_scoreboard_ui(mut commands: Commands, existing_ui: Query<Entity, With<ScoreUI>>) {
+fn setup_scoreboard_ui(
+    mut commands: Commands, 
+    existing_ui: Query<Entity, With<ScoreUI>>) 
+    {
     for entity in &existing_ui {
         commands.entity(entity).despawn();
     }
@@ -63,8 +66,7 @@ fn setup_scoreboard_ui(mut commands: Commands, existing_ui: Query<Entity, With<S
             position_type: PositionType::Absolute,
             top: Val::Px(20.0),
             justify_content: JustifyContent::SpaceBetween,
-            align_items: AlignItems::Center,
-            padding: UiRect::horizontal(Val::Px(100.0)),
+            padding: UiRect::horizontal(Val::Px(500.0)),
             ..default()
         },
         ScoreUI,
@@ -169,9 +171,9 @@ fn setup_ball(
         },
         Transform::from_xyz(-565.0, 0.0, 5.0),
         Ball {
-            velocity: Vec2::new(350.0, 150.0),
+            velocity: Vec2::new(600.0, 200.0),
             radius: 10.0,
-            base_speed: 350.0,
+            base_speed: 600.0,
             attached_to: Some(PlayerId::One),
         },
     ));
@@ -270,7 +272,7 @@ fn handle_collisions(
             if is_colliding {
                 let offset = (ball_pos.y - player_pos.y) / (p_size.y / 2.0);
                 let bounce_angle = offset * (std::f32::consts::PI / 4.0);
-                let speed = ball.velocity.length();
+                let speed = ball.velocity.length();//تبدیل به بردار سرعت
 
                 match player.id {
                     PlayerId::One if ball.velocity.x < 0.0 => {
@@ -322,7 +324,7 @@ fn shrink_opponent(
 }
 
 fn reset_ball_to_player(ball: &mut Ball, owner: PlayerId, direction: f32) {
-    ball.base_speed += 30.0;
+    ball.base_speed += 100.0;
     ball.velocity = Vec2::new(ball.base_speed * direction, 100.0);
     ball.attached_to = Some(owner);
 }

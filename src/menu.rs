@@ -64,10 +64,9 @@ fn setup_main_menu(mut commands: Commands) {
             BackgroundColor(Color::srgb(0.2, 0.6, 0.2)),
             Name::new("BtnPvp"),
         )).with_children(|b| {
-            b.spawn((Text::new("2 Player Mode"), TextFont { font_size: FontSize::Px(25.0), ..default() }));
+            b.spawn((Text::new("2 Player"), TextFont { font_size: FontSize::Px(25.0), ..default() }));
         });
 
-        // ۲. دکمه بازی با هوش مصنوعی
         parent.spawn((
             Button,
             Node {
@@ -80,10 +79,9 @@ fn setup_main_menu(mut commands: Commands) {
             BackgroundColor(Color::srgb(0.2, 0.4, 0.8)),
             Name::new("BtnAi"),
         )).with_children(|b| {
-            b.spawn((Text::new("VS AI Mode"), TextFont { font_size: FontSize::Px(25.0), ..default() }));
+            b.spawn((Text::new("1 player"), TextFont { font_size: FontSize::Px(25.0), ..default() }));
         });
 
-        // ۳. دکمه خروج از بازی
         parent.spawn((
             Button,
             Node {
@@ -126,7 +124,7 @@ fn setup_ai_menu(mut commands: Commands) {
             BackgroundColor(Color::srgb(0.3, 0.7, 0.3)),
             Name::new("BtnEasy"),
         )).with_children(|b| {
-            b.spawn((Text::new("Easy AI"), TextFont { font_size: FontSize::Px(25.0), ..default() }));
+            b.spawn((Text::new("Easy"), TextFont { font_size: FontSize::Px(25.0), ..default() }));
         });
 
         parent.spawn((
@@ -141,7 +139,7 @@ fn setup_ai_menu(mut commands: Commands) {
             BackgroundColor(Color::srgb(0.8, 0.3, 0.3)),
             Name::new("BtnHard"),
         )).with_children(|b| {
-            b.spawn((Text::new("Hard AI"), TextFont { font_size: FontSize::Px(25.0), ..default() }));
+            b.spawn((Text::new("Hard"), TextFont { font_size: FontSize::Px(25.0), ..default() }));
         });
     });
 }
